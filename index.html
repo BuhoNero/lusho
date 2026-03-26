@@ -259,8 +259,131 @@
     }
     .steam-btn:hover { filter: brightness(1.15); }
 
+    /* ── SCREENSHOTS ── */
+    #screenshots { background: var(--black); }
+
+    .screenshots-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .screenshot-item {
+      position: relative;
+      border: 3px solid var(--border);
+      box-shadow: 4px 4px 0 rgba(0,0,0,0.6);
+      overflow: hidden;
+      cursor: pointer;
+      aspect-ratio: 16/9;
+      background: var(--panel);
+    }
+
+    .screenshot-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.2s ease, filter 0.2s ease;
+      image-rendering: pixelated;
+    }
+
+    .screenshot-item:hover img {
+      transform: scale(1.04);
+      filter: brightness(1.1);
+    }
+
+    /* Pixel corner accent on hover */
+    .screenshot-item::before {
+      content: '▶';
+      position: absolute;
+      top: 8px; left: 8px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.5rem;
+      color: var(--cyan);
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 2;
+      text-shadow: 0 0 6px var(--cyan);
+    }
+    .screenshot-item:hover::before { opacity: 1; }
+
+    /* Scan-line overlay on each image */
+    .screenshot-item::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        180deg,
+        transparent 0px, transparent 3px,
+        rgba(0,0,0,0.12) 3px, rgba(0,0,0,0.12) 4px
+      );
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ── LIGHTBOX ── */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 900;
+      background: rgba(0,0,0,0.92);
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+    }
+    .lightbox.open { display: flex; }
+
+    .lightbox img {
+      max-width: 90vw;
+      max-height: 85vh;
+      object-fit: contain;
+      border: 3px solid var(--border);
+      box-shadow: 0 0 60px rgba(0,245,212,0.15), 8px 8px 0 rgba(0,0,0,0.8);
+      image-rendering: pixelated;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 20px; right: 24px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: color 0.1s;
+      background: none;
+      border: none;
+    }
+    .lightbox-close:hover { color: var(--cyan); }
+
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 16px;
+      transition: color 0.1s;
+    }
+    .lightbox-nav:hover { color: var(--cyan); }
+    .lightbox-prev { left: 16px; }
+    .lightbox-next { right: 16px; }
+
+    .lightbox-counter {
+      position: absolute;
+      bottom: 20px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.4rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+    }
+
     /* ── STUDIO ── */
-    #studio { background: var(--black); }
+    #studio { background: var(--darkbg); }
     .studio-card {
       background: var(--panel);
       border: 3px solid var(--border);
@@ -318,6 +441,10 @@
       .game-grid { grid-template-columns: 1fr; }
       .studio-card { padding: 24px 20px; }
       .hero-title { font-size: 1.6rem; }
+      .screenshots-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 400px) {
+      .screenshots-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -327,6 +454,7 @@
   <a href="#hero" class="nav-logo">LUSHO</a>
   <ul class="nav-links">
     <li><a href="#game">GAME</a></li>
+    <li><a href="#screenshots">SCREENSHOTS</a></li>
     <li><a href="#studio">STUDIO</a></li>
     <li><a href="#links">LINKS</a></li>
   </ul>
@@ -386,6 +514,61 @@
   </div>
 </section>
 
+<!-- SCREENSHOTS -->
+<section id="screenshots">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-tag">// IN-GAME</span>
+      <h2 class="section-title">SCREENSHOTS</h2>
+      <div class="pixel-rule"></div>
+    </div>
+
+    <!--
+      ✏️ HOW TO ADD YOUR SCREENSHOTS:
+      1. Upload your images to an "images" folder in your GitHub repo
+      2. Replace the src="images/screenshot1.jpg" with your real filenames
+      3. Add or remove <div class="screenshot-item"> blocks as needed
+         (works best with 3, 6, or 9 images to keep the grid even)
+    -->
+    <div class="screenshots-grid reveal" id="screenshotsGrid">
+
+      <div class="screenshot-item" data-index="0">
+        <img src="images/screenshot1.jpg" alt="Time Flipper screenshot 1" loading="lazy" />
+      </div>
+
+      <div class="screenshot-item" data-index="1">
+        <img src="images/screenshot2.jpg" alt="Time Flipper screenshot 2" loading="lazy" />
+      </div>
+
+      <div class="screenshot-item" data-index="2">
+        <img src="images/screenshot3.jpg" alt="Time Flipper screenshot 3" loading="lazy" />
+      </div>
+
+      <div class="screenshot-item" data-index="3">
+        <img src="images/screenshot4.jpg" alt="Time Flipper screenshot 4" loading="lazy" />
+      </div>
+
+      <div class="screenshot-item" data-index="4">
+        <img src="images/screenshot5.jpg" alt="Time Flipper screenshot 5" loading="lazy" />
+      </div>
+
+      <div class="screenshot-item" data-index="5">
+        <img src="images/screenshot6.jpg" alt="Time Flipper screenshot 6" loading="lazy" />
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">✕ CLOSE</button>
+  <button class="lightbox-nav lightbox-prev" id="lightboxPrev">◀</button>
+  <img src="" alt="Screenshot" id="lightboxImg" />
+  <button class="lightbox-nav lightbox-next" id="lightboxNext">▶</button>
+  <span class="lightbox-counter" id="lightboxCounter"></span>
+</div>
+
 <!-- STUDIO -->
 <section id="studio">
   <div class="container">
@@ -396,12 +579,10 @@
     </div>
     <div class="studio-card reveal">
       <p>
-        <!-- ✏️ Edit this bio — tell your story! -->
         Lusho is a solo indie game studio driven by a game artist.
       </p>
       <p>
-        <!-- ✏️ Add your location, what drives you, etc. -->
-        Based in Barcelona. 
+        Based in Barcelona.
       </p>
     </div>
   </div>
@@ -416,9 +597,6 @@
       <div class="pixel-rule"></div>
     </div>
     <div class="links-grid reveal">
-      <!-- ✏️ Replace REPLACE_* placeholders with your real handles/URLs -->
-      <!-- ✏️ Delete any cards for platforms you don't use -->
-
       <a href="https://store.steampowered.com/app/1807950/Time_Flipper/" target="_blank" class="link-card">
         <span class="link-icon">🎮</span>
         <span class="link-label">STEAM</span>
@@ -456,7 +634,7 @@
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  // Starfield
+  // ── Starfield ──
   const starsEl = document.getElementById('stars');
   for (let i = 0; i < 80; i++) {
     const s = document.createElement('div');
@@ -465,11 +643,68 @@
     starsEl.appendChild(s);
   }
 
-  // Scroll reveal
+  // ── Scroll reveal ──
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
   }, { threshold: 0.1 });
   document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  // ── Lightbox ──
+  const lightbox    = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxCtr = document.getElementById('lightboxCounter');
+  const items       = Array.from(document.querySelectorAll('.screenshot-item'));
+  let current       = 0;
+
+  function getImages() {
+    return items.map(el => ({
+      src: el.querySelector('img').src,
+      alt: el.querySelector('img').alt
+    }));
+  }
+
+  function openLightbox(index) {
+    const imgs = getImages();
+    if (!imgs.length) return;
+    current = index;
+    lightboxImg.src = imgs[current].src;
+    lightboxImg.alt = imgs[current].alt;
+    lightboxCtr.textContent = `${current + 1} / ${imgs.length}`;
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function navigate(dir) {
+    const imgs = getImages();
+    current = (current + dir + imgs.length) % imgs.length;
+    lightboxImg.src = imgs[current].src;
+    lightboxImg.alt = imgs[current].alt;
+    lightboxCtr.textContent = `${current + 1} / ${imgs.length}`;
+  }
+
+  items.forEach((item, i) => {
+    item.addEventListener('click', () => openLightbox(i));
+  });
+
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  document.getElementById('lightboxPrev').addEventListener('click', e => { e.stopPropagation(); navigate(-1); });
+  document.getElementById('lightboxNext').addEventListener('click', e => { e.stopPropagation(); navigate(1); });
+
+  lightbox.addEventListener('click', e => {
+    if (e.target === lightbox) closeLightbox();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (!lightbox.classList.contains('open')) return;
+    if (e.key === 'Escape')      closeLightbox();
+    if (e.key === 'ArrowLeft')   navigate(-1);
+    if (e.key === 'ArrowRight')  navigate(1);
+  });
 </script>
 
 </body>
