@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lusho — Indie Game Studio</title>
+  <meta name="description" content="Lusho is a solo indie game studio. Creator of Time Flipper — press one button to switch between timelines." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    :root {
+      --black:     #0d0d0d;
+      --darkbg:    #111118;
+      --panel:     #1a1a2e;
+      --border:    #2a2a4a;
+      --cyan:      #00f5d4;
+      --amber:     #ffb703;
+      --amber-dim: rgba(255,183,3,0.12);
+      --pink:      #ff6b9d;
+      --text:      #c8c8e8;
+      --text-dim:  #5a5a7a;
+      --white:     #f0f0ff;
+    }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      line-height: 1.6;
+      cursor: crosshair;
+      overflow-x: hidden;
+    }
+
+    /* Scanlines */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: linear-gradient(rgba(0,0,0,0.18) 1px, transparent 1px);
+      background-size: 100% 4px;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* CRT vignette */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.75) 100%);
+      pointer-events: none;
+      z-index: 998;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 32px;
+      height: 52px;
+      background: var(--black);
+      border-bottom: 3px solid var(--border);
+    }
+    nav::after {
+      content: '';
+      position: absolute;
+      bottom: -6px; left: 0; right: 0;
+      height: 3px;
+      background: repeating-linear-gradient(90deg, var(--cyan) 0,var(--cyan) 4px,transparent 4px,transparent 8px);
+    }
+    .nav-logo {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.75rem;
+      color: var(--cyan);
+      text-decoration: none;
+      text-shadow: 0 0 8px var(--cyan), 2px 2px 0 rgba(0,245,212,0.2);
+    }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.45rem;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.1s;
+    }
+    .nav-links a:hover { color: var(--amber); text-shadow: 0 0 6px var(--amber); }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 100px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .stars { position: absolute; inset: 0; pointer-events: none; }
+    .star {
+      position: absolute;
+      width: 2px; height: 2px;
+      background: #fff;
+      animation: twinkle var(--d,3s) ease-in-out infinite;
+      opacity: var(--o,0.4);
+    }
+    @keyframes twinkle { 0%,100%{opacity:var(--o,0.4)} 50%{opacity:0.05} }
+
+    .hero-ground {
+      position: absolute;
+      bottom: 60px; left: 0; right: 0;
+      height: 4px;
+      background: repeating-linear-gradient(90deg,var(--cyan) 0,var(--cyan) 8px,transparent 8px,transparent 16px);
+      opacity: 0.3;
+    }
+    .pixel-char {
+      position: absolute;
+      bottom: 64px;
+      font-size: 24px;
+      animation: walk 14s linear infinite;
+    }
+    @keyframes walk {
+      0%  { left: -40px; transform: scaleX(1); }
+      49% { left: calc(100% + 40px); transform: scaleX(1); }
+      50% { left: calc(100% + 40px); transform: scaleX(-1); }
+      99% { left: -40px; transform: scaleX(-1); }
+      100%{ left: -40px; transform: scaleX(1); }
+    }
+
+    .hero-tag {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.5rem;
+      color: var(--cyan);
+      letter-spacing: 0.15em;
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeIn 0.4s 0.2s steps(1) forwards;
+    }
+    .hero-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(2rem, 7vw, 4.2rem);
+      line-height: 1.3;
+      color: var(--white);
+      text-shadow: 4px 4px 0 var(--cyan), 0 0 40px rgba(0,245,212,0.3);
+      opacity: 0;
+      animation: fadeIn 0.4s 0.5s steps(1) forwards;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-sub {
+      font-size: 1.4rem;
+      color: var(--text-dim);
+      margin-top: 20px;
+      opacity: 0;
+      animation: fadeIn 0.4s 1s steps(1) forwards;
+    }
+    .blink { animation: blink 1s steps(1) infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .hero-cta {
+      display: inline-block;
+      margin-top: 40px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--black);
+      background: var(--cyan);
+      padding: 14px 28px;
+      text-decoration: none;
+      box-shadow: 4px 4px 0 rgba(0,245,212,0.25), 0 0 20px rgba(0,245,212,0.35);
+      transition: transform 0.08s, box-shadow 0.08s;
+      opacity: 0;
+      animation: fadeIn 0.4s 1.3s steps(1) forwards;
+    }
+    .hero-cta:hover { transform: translate(2px,2px); box-shadow: 2px 2px 0 rgba(0,245,212,0.2); }
+
+    @keyframes fadeIn { to { opacity:1; } }
+
+    /* ── SHARED ── */
+    section { padding: 90px 24px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    .section-header { margin-bottom: 48px; }
+    .section-tag {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.45rem;
+      color: var(--cyan);
+      letter-spacing: 0.15em;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .section-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(1rem, 3vw, 1.5rem);
+      color: var(--white);
+      line-height: 1.5;
+    }
+    .pixel-rule {
+      margin-top: 16px;
+      height: 4px;
+      width: 80px;
+      background: repeating-linear-gradient(90deg,var(--amber) 0,var(--amber) 4px,transparent 4px,transparent 8px);
+    }
+
+    /* ── GAME ── */
+    #game { background: var(--darkbg); }
+    .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+    .game-desc { font-size: 1.2rem; color: var(--text); line-height: 1.7; }
+    .game-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+    .tag {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.4rem;
+      padding: 6px 10px;
+      border: 2px solid var(--border);
+      color: var(--text-dim);
+    }
+    .tag.hi { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
+
+    .steam-box {
+      background: var(--panel);
+      border: 3px solid var(--border);
+      box-shadow: 6px 6px 0 rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+    .steam-box-header {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.4rem;
+      color: var(--cyan);
+      background: var(--black);
+      padding: 8px 12px;
+      border-bottom: 2px solid var(--border);
+      letter-spacing: 0.1em;
+    }
+    .steam-box iframe { display: block; width: 100%; border: none; }
+    .steam-btn {
+      display: block;
+      text-align: center;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.5rem;
+      letter-spacing: 0.08em;
+      color: var(--black);
+      background: var(--amber);
+      padding: 14px;
+      text-decoration: none;
+      box-shadow: inset 0 -3px 0 rgba(0,0,0,0.3);
+      transition: filter 0.1s;
+    }
+    .steam-btn:hover { filter: brightness(1.15); }
+
+    /* ── STUDIO ── */
+    #studio { background: var(--black); }
+    .studio-card {
+      background: var(--panel);
+      border: 3px solid var(--border);
+      padding: 40px;
+      box-shadow: 6px 6px 0 rgba(0,0,0,0.6);
+      position: relative;
+    }
+    .studio-card::before { content:'█'; position:absolute; top:-2px; left:-2px; font-size:10px; color:var(--cyan); opacity:0.5; }
+    .studio-card::after  { content:'█'; position:absolute; bottom:-2px; right:-2px; font-size:10px; color:var(--cyan); opacity:0.5; }
+    .studio-card p { font-size: 1.2rem; margin-bottom: 16px; max-width: 680px; }
+    .studio-card p:last-child { margin-bottom: 0; color: var(--text-dim); }
+
+    /* ── LINKS ── */
+    #links { background: var(--darkbg); }
+    .links-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 12px; }
+    .link-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 24px 16px;
+      background: var(--panel);
+      border: 3px solid var(--border);
+      text-decoration: none;
+      color: var(--text-dim);
+      box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+      transition: transform 0.08s, box-shadow 0.08s, border-color 0.1s, color 0.1s;
+      text-align: center;
+    }
+    .link-card:hover { border-color: var(--cyan); color: var(--cyan); transform: translate(-2px,-2px); box-shadow: 6px 6px 0 rgba(0,245,212,0.12); }
+    .link-card:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 rgba(0,0,0,0.5); }
+    .link-icon { font-size: 1.8rem; line-height: 1; }
+    .link-label { font-family: 'Press Start 2P', monospace; font-size: 0.45rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+    /* ── FOOTER ── */
+    footer { background: var(--black); border-top: 3px solid var(--border); padding: 36px 24px; text-align: center; }
+    footer::before {
+      content: '';
+      display: block;
+      height: 4px;
+      background: repeating-linear-gradient(90deg,var(--cyan) 0,var(--cyan) 4px,var(--amber) 4px,var(--amber) 8px,var(--pink) 8px,var(--pink) 12px,transparent 12px,transparent 16px);
+      margin-bottom: 24px;
+    }
+    .footer-logo { font-family: 'Press Start 2P', monospace; font-size: 0.65rem; color: var(--cyan); letter-spacing: 0.2em; margin-bottom: 12px; }
+    footer p { font-size: 0.9rem; color: var(--text-dim); }
+
+    /* ── REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 660px) {
+      .nav-links { display: none; }
+      nav { padding: 0 16px; }
+      .game-grid { grid-template-columns: 1fr; }
+      .studio-card { padding: 24px 20px; }
+      .hero-title { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="#hero" class="nav-logo">LUSHO</a>
+  <ul class="nav-links">
+    <li><a href="#game">GAME</a></li>
+    <li><a href="#studio">STUDIO</a></li>
+    <li><a href="#links">LINKS</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="stars" id="stars"></div>
+  <p class="hero-tag">▶ LUSHO PRESENTS</p>
+  <h1 class="hero-title">TIME<br>FLIPPER</h1>
+  <p class="hero-sub">ONE BUTTON. TWO TIMELINES.<span class="blink">_</span></p>
+  <a href="#game" class="hero-cta">▶ VIEW GAME</a>
+  <div class="hero-ground"></div>
+  <div class="pixel-char">🧍</div>
+</section>
+
+<!-- GAME -->
+<section id="game">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-tag">// LATEST RELEASE</span>
+      <h2 class="section-title">TIME FLIPPER</h2>
+      <div class="pixel-rule"></div>
+    </div>
+    <div class="game-grid">
+      <div class="reveal">
+        <p class="game-desc">
+          Press one button to switch between timelines. Use this time-flip device
+          to find and liberate missing people. Lead them out by switching the world state.
+        </p>
+        <p class="game-desc" style="margin-top:16px; color:var(--text-dim);">
+          You carry no weapons — you must time-flip your way around the enemies and violence.
+        </p>
+        <div class="game-tags">
+          <span class="tag hi">PUZZLE</span>
+          <span class="tag hi">STEALTH</span>
+          <span class="tag">PC</span>
+          <span class="tag">SOLO DEV</span>
+          <span class="tag">PIXEL ART</span>
+        </div>
+      </div>
+      <div class="reveal" style="transition-delay:0.15s">
+        <div class="steam-box">
+          <div class="steam-box-header">// STEAM STORE</div>
+          <iframe
+            src="https://store.steampowered.com/widget/1807950/"
+            height="190">
+          </iframe>
+          <a href="https://store.steampowered.com/app/1807950/Time_Flipper/"
+             target="_blank"
+             class="steam-btn">
+            ▶ VIEW ON STEAM
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STUDIO -->
+<section id="studio">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-tag">// THE STUDIO</span>
+      <h2 class="section-title">ABOUT LUSHO</h2>
+      <div class="pixel-rule"></div>
+    </div>
+    <div class="studio-card reveal">
+      <p>
+        <!-- ✏️ Edit this bio — tell your story! -->
+        Lusho is a solo indie game studio driven by a love for pixel art and
+        games that make you think sideways. One developer, one artist, one vision —
+        building worlds where the rules bend so the player can breathe.
+      </p>
+      <p>
+        <!-- ✏️ Add your location, what drives you, etc. -->
+        Based in Barcelona. Making games that don't need guns.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- LINKS -->
+<section id="links">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-tag">// FIND US</span>
+      <h2 class="section-title">LINKS</h2>
+      <div class="pixel-rule"></div>
+    </div>
+    <div class="links-grid reveal">
+      <!-- ✏️ Replace REPLACE_* placeholders with your real handles/URLs -->
+      <!-- ✏️ Delete any cards for platforms you don't use -->
+
+      <a href="https://store.steampowered.com/app/1807950/Time_Flipper/" target="_blank" class="link-card">
+        <span class="link-icon">🎮</span>
+        <span class="link-label">STEAM</span>
+      </a>
+      <a href="https://twitter.com/REPLACE_HANDLE" target="_blank" class="link-card">
+        <span class="link-icon">𝕏</span>
+        <span class="link-label">TWITTER</span>
+      </a>
+      <a href="https://discord.gg/REPLACE_INVITE" target="_blank" class="link-card">
+        <span class="link-icon">💬</span>
+        <span class="link-label">DISCORD</span>
+      </a>
+      <a href="https://www.instagram.com/REPLACE_HANDLE/" target="_blank" class="link-card">
+        <span class="link-icon">📸</span>
+        <span class="link-label">INSTAGRAM</span>
+      </a>
+      <a href="https://REPLACE_USERNAME.itch.io/" target="_blank" class="link-card">
+        <span class="link-icon">🕹️</span>
+        <span class="link-label">ITCH.IO</span>
+      </a>
+      <a href="mailto:REPLACE_EMAIL" class="link-card">
+        <span class="link-icon">✉️</span>
+        <span class="link-label">CONTACT</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p class="footer-logo">LUSHO</p>
+  <p>© <span id="year"></span> LUSHO. ALL RIGHTS RESERVED.</p>
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Starfield
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--o:${0.2+Math.random()*0.6};animation-delay:${Math.random()*4}s`;
+    starsEl.appendChild(s);
+  }
+
+  // Scroll reveal
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+
+</body>
+</html>
